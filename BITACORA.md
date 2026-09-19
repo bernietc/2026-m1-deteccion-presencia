@@ -11,8 +11,6 @@ Semana 10/9:
 
 17/9:
 - Revisamos y ajustamos requerimientos en clase
-
-18/9:
 - Búsqueda  de documentación técnica necesaria para la investigación y desarrollo del proyecto.
 
 
