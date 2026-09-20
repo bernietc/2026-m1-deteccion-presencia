@@ -1,15 +1,15 @@
-Semana 3/9: 
+## 3/9: 
 - Se investigó acerca de los distintos casos a implementar.
 - Se analizaron alternativas para la interfaz web.
 - Se investigó sobre CSI.
 
-Semana 10/9:
+## 10/9:
 - Definimos objetivos del proyecto
 - Definimos requerimientos a cumplir
 - Definimos elementos a utilizar
 - Redaccion de propuesta inicial
 
-17/9:
+## 17/9:
 - Revisamos y ajustamos requerimientos en clase
 - Búsqueda  de documentación técnica necesaria para la investigación y desarrollo del proyecto.
 
@@ -23,7 +23,7 @@ Semana 10/9:
 | Espressif CSI | [esp-csi](https://github.com/espressif/esp-csi) |
 | Proyecto ESP32 + CSI WiFi | [HLK-LD2412-POE-WiFi-CSI-security](https://github.com/PeterkoCZ91/HLK-LD2412-POE-WiFi-CSI-security) |
 
-## 18-09
+## 18/9
 Actividades realizadas
 - Revisión y corrección de la sección “Identificación de Partes” del Plan de Proyecto.
 - Actualización del listado de materiales, incorporando las cantidades previstas de cada componente y tomando modelos comerciales de referencia para poder especificar sus características técnicas.
@@ -38,3 +38,16 @@ Actividades realizadas
 - Integración de persistencia asíncrona en SQLite (`aiosqlite`) para ensayos experimentales con Ground Truth y registro de histórico de telemetría sin bloqueo de streaming.
 - Desarrollo del frontend en React 18, TypeScript y Vite con estética Liquid Glass, navegación por vistas de los 3 casos, renderizado dinámico de gráficos en Canvas con Apache ECharts y soporte completo para Modo Oscuro reactivo.
 - Creación de suite de pruebas unitarias automáticas (`pytest`), scripts de simulación de nodos ESP32 y orquestación multicontenedor con Docker Compose.
+
+## 19/9
+Modificación del plan de proyecto: se definieron nuevos objetivos de éxito en cuanto a la comparacion de metodos (sensor PIR / señal CSI):
+- Reducción de falsos negativos: Disminuir en al menos un 80% los falsos negativos del sensor PIR en escenarios de presencia estática, como por ejemplo una persona sentada sin movimientos bruscos durante más de 60 segundos.
+- Detección sin línea de visión: Lograr una precisión de detección superior al 85% cuando la persona se encuentra detrás de obstáculos no estructurales (pared de yeso, puertas de madera), que es un escenario donde el PIR tiene 0% de efectividad.
+- Latencia de procesamiento: El algoritmo debe procesar la ventana de datos CSI y determinar el estado de presencia en un tiempo inferior a 500 ms.
+
+En cuanto a la visualización web, se definieron las métricas a comparar en tiempo real:
+- Estado Binario de Presencia: Indicadores en paralelo del estado actual del PIR (Movimiento/Vacío) vs. CSI (Presencia/Vacío).
+- Línea de tendencia de detección: Un gráfico temporal que muestre las "caídas" de detección del PIR (cuando la persona se queda quieta) contrastado con el mantenimiento continuo de la detección del CSI.
+- Varianza del Canal: Un gráfico lineal mostrando la perturbación de la amplitud de las subportadoras CSI en crudo, permitiendo visualizar el "ruido" que genera una persona al moverse o respirar.
+
+
