@@ -56,6 +56,7 @@ Investigación y especificaciones del sensor PIR:
 <img width="308" height="266" alt="image" src="https://github.com/user-attachments/assets/6740fce4-3d02-4707-8f3e-09f810d127eb" />
 
 
+
 | Datasheet PIR|
 |---------|
 | https://datasheet4u.com/download/775434/HC-SR501.html|
