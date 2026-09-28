@@ -68,4 +68,34 @@ Investigación y especificaciones del sensor PIR:
 - Sensibilidad al tipo de movimiento: El sensor funciona mediante una sonda doble (A y B). Es mucho más sensible cuando la persona camina cruzando frente a él (de izquierda a derecha o viceversa) que cuando se mueve directamente hacia el sensor de frente.
 - Retardo ajustable (Delay): Se puede ajustar mediante un potenciómetro cuánto tiempo se mantiene la señal en alto tras detectar movimiento, abarcando desde unos 3 segundos hasta 5 minutos.
 - Modo de disparo: Posee un puente (jumper) que permite configurar un "disparo repetitivo" (H), el cual viene por defecto y mantiene la salida en alto continuamente mientras detecte actividad humana en su rango.
-- Tiempo de bloqueo (Block time): Tras enviar una señal de salida, el sensor entra en un período de bloqueo predeterminado de 2.5 segundos, durante el cual no aceptará ninguna señal nueva.   
+- Tiempo de bloqueo (Block time): Tras enviar una señal de salida, el sensor entra en un período de bloqueo predeterminado de 2.5 segundos, durante el cual no aceptará ninguna señal nueva.
+
+
+##28/9
+
+Análisis de Repositorios de Referencia y Estrategia de Software Pre-Hardware
+Aprovechando la espera de los componentes físicos (esperados para el jueves 1-10) hicimos un análisis técnico apoyado en IA de los tres repositorios de referencia brindados para el proyecto. El propósito fue identificar código reutilizable, patrones de arquitectura de telemetría y datasets de prueba para iniciar el desarrollo del backend.
+
+1. Extracción de CSI y Procesamiento (`francescopace/espectre`)
+   - Impacta directamente en el desarrollo del Caso 2 (Detección por CSI)
+   - Componentes identificados:
+     - Firmware base y SDK en C++ / MicroPython optimizados para la captura de Channel State Information en ESP32.
+     - Datasets públicos con grabaciones de CSI en entornos reales (ambiente vacío, presencia estática y movimiento).
+     - Registro de características (*Feature Ledger*) que documenta las métricas de señal y filtros más eficientes para reducción de ruido.
+   - Aporte al proyecto: Permite simular el flujo de datos de entrada al backend de FastAPI mediante la inyección de los datasets públicos, adelantando el algoritmo de procesamiento antes de tener las antenas/ESP32 en mano.
+
+2. Infraestructura y Robustez de Telemetría (Ecosistema de Nodos de Seguridad / HLK)
+   - Aplicable al Caso 1.
+   - Componentes clave identificados:
+     - Buffer Offline: Mecanismo de persistencia local mediante LittleFS en el ESP32 para almacenar eventos MQTT en caso de desconexión de red.
+     - Supervisión (Heartbeat): Emisión periódica de paquetes de estado para verificar la salud del nodo ante el broker.
+     - Estrategias de supresión de falsos positivos: Lógica de filtrado de disparos breves en sensores de movimiento.
+   - Aporte al proyecto: Se adaptará el esquema de *heartbeat* y reconexión automática MQTT para el firmware del sensor PIR, asegurando la estabilidad requerida para el primer hit.
+
+3. Backend de Integración y Fusión (`multi-sensor-fusion`)
+   -  Servirá de modelo para la arquitectura del **Backend Python/FastAPI** y la integración del **Dashboard Web**.
+   - Componentes clave identificados:
+     - Consumo centralizado de tópicos MQTT desde múltiples nodos y generación de métricas de confianza de presencia ponderadas.
+     - Herramientas para el ajuste y calibración de pesos de detección basados en datos.
+   - Aporte al proyecto: Otorga el diseño conceptual para estructurar la comunicación entre el Broker Mosquitto, FastAPI y los WebSockets hacia la interfaz.
+
