@@ -69,3 +69,19 @@ Investigación y especificaciones del sensor PIR:
 - Retardo ajustable (Delay): Se puede ajustar mediante un potenciómetro cuánto tiempo se mantiene la señal en alto tras detectar movimiento, abarcando desde unos 3 segundos hasta 5 minutos.
 - Modo de disparo: Posee un puente (jumper) que permite configurar un "disparo repetitivo" (H), el cual viene por defecto y mantiene la salida en alto continuamente mientras detecte actividad humana en su rango.
 - Tiempo de bloqueo (Block time): Tras enviar una señal de salida, el sensor entra en un período de bloqueo predeterminado de 2.5 segundos, durante el cual no aceptará ninguna señal nueva.   
+
+## 4/10 — Primera prueba del sensor PIR con ESP32 y visualización web
+
+- Se preparó una prueba del sensor PIR HW-416-B conectado a una ESP32-WROOM-32, con alimentación desde VIN/5V, tierra común y salida digital conectada a GPIO27.
+- Se configuró Arduino IDE y se instaló el soporte **esp32 by Espressif Systems**, seleccionando la placa **ESP32 Dev Module**.
+- Se cargó un firmware que lee GPIO27 cada 200 ms y transmite `MOVIMIENTO` o `SIN MOVIMIENTO` por USB Serial a 115200 baud.
+- Durante la compilación apareció el error **“bad CPU type in executable”** de la herramienta `ctags`. Se identificó una incompatibilidad entre esa herramienta Intel y el Mac Apple Silicon, y se resolvió instalando Rosetta.
+- La carga del firmware falló inicialmente a 921600 baud. Se redujo la velocidad de carga a **115200 baud**, tras lo cual la escritura y verificación del firmware finalizaron correctamente.
+- Se presentaron problemas de disponibilidad del puerto USB y caracteres ilegibles en el monitor serial. Se revisó la selección del puerto, el uso exclusivo de la conexión y la configuración del monitor a **115200 baud**.
+- Se agregó una página independiente **Prueba PIR — USB**, utilizando Web Serial, los servicios, hooks y componentes existentes, sin nuevas dependencias.
+- Se implementó el guardado manual de los últimos 50 mensajes en una tabla independiente de SQLite, con consulta del historial y prevención de registros duplicados.
+- La compilación del frontend y las pruebas automatizadas finalizaron correctamente: **27 tests del backend y 9 pruebas de lectura serial**.
+
+### Dificultad pendiente
+
+- El sensor continuó informando movimiento durante las pruebas. Se revisaron las conexiones y se propusieron pruebas de ubicación, estabilización y lectura de GPIO27 conectado a GND. **No quedó confirmada la causa ni validado el cambio entre movimiento y ausencia de movimiento.**
