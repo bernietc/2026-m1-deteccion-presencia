@@ -14,6 +14,8 @@ from app.api.routes.telemetry import router as telemetry_router
 from app.api.routes.metrics import router as metrics_router
 from app.api.routes.cases import router as cases_router
 from app.api.routes.websocket import router as ws_router
+from app.api.routes.config import router as config_router
+from app.api.routes.pir_usb import router as pir_usb_router
 
 # Inicializar logging
 setup_logging()
@@ -66,6 +68,8 @@ app.include_router(health_router, prefix="/api/v1")
 app.include_router(telemetry_router, prefix="/api/v1")
 app.include_router(metrics_router, prefix="/api/v1")
 app.include_router(cases_router, prefix="/api/v1")
+app.include_router(config_router, prefix="/api/v1")
+app.include_router(pir_usb_router, prefix="/api/v1")
 app.include_router(ws_router)
 
 

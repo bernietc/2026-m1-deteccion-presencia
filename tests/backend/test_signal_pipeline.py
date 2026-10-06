@@ -37,3 +37,20 @@ def test_csi_signal_pipeline_presence():
     _, features_disturbed, presence_disturbed = pipeline.process_window(disturbed_signal)
     assert features_disturbed.variance > 2.0
     assert presence_disturbed is True
+
+
+def test_csi_target_discrimination():
+    pipeline = CsiSignalPipeline(hampel_window=5, ma_window=3, variance_threshold=2.0)
+
+    # 1. Objeto periódico estricto (ventilador rotando): onda sinusoidal armónica pura
+    t = np.linspace(0, 2 * np.pi * 5, 40)
+    fan_signal = list(22.0 + np.sin(t) * 4.0)
+    _, features_fan, _ = pipeline.process_window(fan_signal)
+    assert features_fan.periodicity_ratio >= 0.40
+    assert features_fan.target_type == "object_fan"
+
+    # 2. Ambiente vacío
+    empty_signal = [22.0 + np.random.normal(0, 0.1) for _ in range(30)]
+    _, features_empty, presence_empty = pipeline.process_window(empty_signal)
+    assert features_empty.target_type == "empty"
+    assert presence_empty is False

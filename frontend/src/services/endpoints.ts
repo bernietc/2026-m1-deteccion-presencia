@@ -2,6 +2,7 @@ import { ENV } from '../config/env';
 
 export const ENDPOINTS = {
   HEALTH: `${ENV.API_URL}/api/v1/health`,
+  PIR_USB_READINGS: `${ENV.API_URL}/api/v1/pir-usb/readings`,
   TELEMETRY_STATUS: `${ENV.API_URL}/api/v1/telemetry/status`,
   TELEMETRY_CASE: (caseId: string) => `${ENV.API_URL}/api/v1/telemetry/${caseId}`,
   TELEMETRY_PIPELINE: (caseId: string) => `${ENV.API_URL}/api/v1/telemetry/${caseId}/pipeline`,
@@ -13,5 +14,11 @@ export const ENDPOINTS = {
   CASE_DETAIL: (caseId: string) => `${ENV.API_URL}/api/v1/cases/${caseId}`,
   SIMULATION_TOGGLE: `${ENV.API_URL}/api/v1/telemetry/simulation/toggle`,
   SIMULATION_STATUS: `${ENV.API_URL}/api/v1/telemetry/simulation/status`,
+  CONFIG_NODES: `${ENV.API_URL}/api/v1/config/nodes`,
+  CONFIG_HEADER: (nodeId: string) => `${ENV.API_URL}/api/v1/config/header/${nodeId}`,
+  CONFIG_SCENARIOS: `${ENV.API_URL}/api/v1/config/scenarios`,
+  CONFIG_SCENARIO_CURRENT: `${ENV.API_URL}/api/v1/config/scenario/current`,
+  CONFIG_SCENARIO_SET: `${ENV.API_URL}/api/v1/config/scenario`,
+  CONFIG_SCENARIO_RESET: `${ENV.API_URL}/api/v1/config/scenario/reset`,
   WS_TELEMETRY: ENV.WS_URL,
 };

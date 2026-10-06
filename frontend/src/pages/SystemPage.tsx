@@ -4,6 +4,8 @@ import { GlassCard } from '../components/common/GlassCard';
 import { SectionHeader } from '../components/common/SectionHeader';
 import { api } from '../services/api';
 import { Settings, Server, Cpu, Database, Send, CheckCircle2 } from 'lucide-react';
+import { Esp32ConfigPanel } from '../components/system/Esp32ConfigPanel';
+import { ScenarioSelector } from '../components/system/ScenarioSelector';
 
 export const SystemPage: React.FC = () => {
   const [health, setHealth] = useState<any>(null);
@@ -49,13 +51,23 @@ export const SystemPage: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <GlassPanel>
         <SectionHeader
-          title="Configuración y Estado del Sistema"
-          subtitle="Parámetros de telemetría, enlaces de red y registro manual de ensayos"
+          title="Panel de Control y Configuración del Sistema"
+          subtitle="Sintonización de canales y frecuencias de radio, calibración de ESP32, discriminación de objetos vs. personas y auditoría de ensayos"
           icon={<Settings size={18} />}
         />
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Esta vista resume los parámetros de bajo nivel de la arquitectura de telemetría y permite verificar la conectividad de los servicios del backend.
+          Este panel centraliza la configuración de bajo nivel de la red de microcontroladores ESP32, el generador de firmware C/C++, la modulación de escenarios físicos para experimentación y el monitoreo de los servicios del backend.
         </p>
+      </GlassPanel>
+
+      {/* 1. Selector de Escenarios: Objetos vs. Personas */}
+      <GlassPanel>
+        <ScenarioSelector />
+      </GlassPanel>
+
+      {/* 2. Configuración de Radiofrecuencia y Nodos ESP32 */}
+      <GlassPanel>
+        <Esp32ConfigPanel />
       </GlassPanel>
 
       {/* Grid de Estado de Servidores */}

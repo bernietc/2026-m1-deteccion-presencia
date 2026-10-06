@@ -15,7 +15,7 @@ echo "=================================================="
 
 # 1. Iniciar Backend
 echo "[1/2] Iniciando Backend FastAPI en http://localhost:8000..."
-(cd backend && source .venv/bin/activate && uvicorn app.main:app --host 127.0.0.1 --port 8000) &
+(cd backend && source .venv/bin/activate && uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload) &
 
 # Esperar 2 segundos para dar tiempo al arranque del backend
 sleep 2

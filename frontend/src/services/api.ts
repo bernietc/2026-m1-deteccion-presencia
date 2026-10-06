@@ -1,7 +1,10 @@
 import { ENDPOINTS } from './endpoints';
+import type { PirReading, PirUsbRecord } from '../types/pirSerial';
 import { CaseCurrentStatus, CaseTelemetryPayload, FilterMetadata } from '../types/telemetry';
 import { CaseMetrics, SystemComparison, Trial } from '../types/metrics';
 import { CaseStudyDetail } from '../types/cases';
+
+import { SystemNodesConfig, ScenarioDetail, CHeaderResponse } from '../types/config';
 
 class ApiService {
   private async get<T>(url: string): Promise<T> {
@@ -24,6 +27,20 @@ class ApiService {
       throw new Error(`Error HTTP ${response.status} en POST ${url}`);
     }
     return response.json();
+  }
+
+  // Prueba PIR USB
+  async savePirUsbReadings(readings: PirReading[]): Promise<{ saved_count: number }> {
+    return this.post(ENDPOINTS.PIR_USB_READINGS, {
+      readings: readings.map((reading) => ({
+        received_at: new Date(reading.receivedAt).toISOString(),
+        motion: reading.motion,
+      })),
+    });
+  }
+
+  async getPirUsbHistory(): Promise<PirUsbRecord[]> {
+    return this.get(ENDPOINTS.PIR_USB_READINGS);
   }
 
   // Health
@@ -84,6 +101,39 @@ class ApiService {
 
   async getSimulationStatus(): Promise<{ paused: boolean }> {
     return this.get<{ paused: boolean }>(ENDPOINTS.SIMULATION_STATUS);
+  }
+
+  // Configuración de Nodos ESP32
+  async getNodesConfig(): Promise<SystemNodesConfig> {
+    return this.get<SystemNodesConfig>(ENDPOINTS.CONFIG_NODES);
+  }
+
+  async updateNodesConfig(config: SystemNodesConfig): Promise<{ status: string; config: SystemNodesConfig }> {
+    return this.post<{ status: string; config: SystemNodesConfig }>(ENDPOINTS.CONFIG_NODES, config);
+  }
+
+  async getNodeHeader(nodeId: string): Promise<CHeaderResponse> {
+    return this.get<CHeaderResponse>(ENDPOINTS.CONFIG_HEADER(nodeId));
+  }
+
+  // Escenarios Experimentales (Objetos vs. Personas)
+  async getScenarios(): Promise<ScenarioDetail[]> {
+    return this.get<ScenarioDetail[]>(ENDPOINTS.CONFIG_SCENARIOS);
+  }
+
+  async getCurrentScenario(): Promise<{ active_scenario: string; detail: ScenarioDetail | null }> {
+    return this.get<{ active_scenario: string; detail: ScenarioDetail | null }>(ENDPOINTS.CONFIG_SCENARIO_CURRENT);
+  }
+
+  async setScenario(scenario: string): Promise<{ status: string; active_scenario: string; detail: ScenarioDetail }> {
+    return this.post<{ status: string; active_scenario: string; detail: ScenarioDetail }>(
+      ENDPOINTS.CONFIG_SCENARIO_SET,
+      { scenario }
+    );
+  }
+
+  async resetScenario(): Promise<{ status: string; active_scenario: string }> {
+    return this.post<{ status: string; active_scenario: string }>(ENDPOINTS.CONFIG_SCENARIO_RESET, {});
   }
 }
 

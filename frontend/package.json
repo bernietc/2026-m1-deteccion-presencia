@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:pir": "node --test ../tests/frontend/pirSerial.test.mjs"
   },
   "dependencies": {
     "echarts": "^5.5.1",

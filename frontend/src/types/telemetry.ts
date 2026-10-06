@@ -17,6 +17,8 @@ export interface FeatureMetrics {
   energy: number;
   detection_score: number;
   threshold_applied: number;
+  periodicity_ratio?: number;
+  target_type?: string;
 }
 
 export interface CaseCurrentStatus {
@@ -27,6 +29,7 @@ export interface CaseCurrentStatus {
   current_latency_ms: number;
   last_updated: string;
   total_samples: number;
+  target_type?: string;
 }
 
 export interface CaseTelemetryPayload {
@@ -39,6 +42,7 @@ export interface CaseTelemetryPayload {
   features?: FeatureMetrics;
   current_score?: number;
   ground_truth?: boolean;
+  target_type?: string;
 }
 
 export type ConnectionState = 'LIVE' | 'RECONNECTING' | 'OFFLINE';

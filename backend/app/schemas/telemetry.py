@@ -26,6 +26,8 @@ class FeatureMetrics(BaseModel):
     energy: float = Field(..., description="Energía normalizada de la señal")
     detection_score: float = Field(..., description="Score continuo entre 0 y 1")
     threshold_applied: float = Field(..., description="Umbral de decisión para presencia")
+    periodicity_ratio: float = Field(0.0, description="Grado de periodicidad armónica (alto en objetos rotativos como ventiladores)")
+    target_type: str = Field("empty", description="Clasificación del objetivo: empty, person_active, person_static, object_fan, object_moved")
 
 
 class TelemetrySample(BaseModel):
@@ -72,6 +74,7 @@ class CaseCurrentStatus(BaseModel):
     current_latency_ms: float
     last_updated: str
     total_samples: int
+    target_type: Optional[str] = None
 
 
 class CaseTelemetryPayload(BaseModel):
@@ -85,6 +88,7 @@ class CaseTelemetryPayload(BaseModel):
     features: Optional[FeatureMetrics] = None
     current_score: Optional[float] = None
     ground_truth: Optional[bool] = None
+    target_type: Optional[str] = None
 
 
 class TelemetryHistoryRecord(BaseModel):

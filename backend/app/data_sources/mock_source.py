@@ -35,8 +35,20 @@ class MockDataSource(DataSource):
         self._dedicated_presence = False
         self._dedicated_timer = 0
 
+        # Escenario forzado para experimentación de objetos vs. personas
+        self._forced_scenario: Optional[str] = None
+
         # Parámetros temporales de la señal CSI
         self._time_step = 0.0
+
+    def set_scenario(self, scenario: Optional[str]):
+        """Establece un escenario de prueba específico o None para simulación automática."""
+        self._forced_scenario = scenario
+        logger.info(f"MockDataSource: escenario forzado establecido en '{scenario}'")
+
+    @property
+    def current_scenario(self) -> Optional[str]:
+        return self._forced_scenario
 
     def pause(self):
         self._paused = True
@@ -145,14 +157,30 @@ class MockDataSource(DataSource):
                 await asyncio.sleep(1.0)
 
     def _update_pir_state(self):
+        if self._forced_scenario:
+            if self._forced_scenario == "human_active":
+                self._pir_presence = True
+            else:
+                # El PIR NO detecta ventiladores, muebles movidos ni personas inmóviles
+                self._pir_presence = False
+            return
+
         self._pir_timer -= 1
         if self._pir_timer <= 0:
-            # Alterna estado: presencia dura 4 a 7 seg, ausencia 6 a 12 seg
             self._pir_presence = not self._pir_presence
             duration_sec = random.uniform(4.0, 7.0) if self._pir_presence else random.uniform(6.0, 12.0)
             self._pir_timer = int(duration_sec / self.sampling_interval)
 
     def _update_router_state(self):
+        if self._forced_scenario:
+            if self._forced_scenario in ("human_active", "human_static", "object_fan"):
+                self._router_presence = True
+            elif self._forced_scenario == "object_moved":
+                self._router_presence = True
+            else:
+                self._router_presence = False
+            return
+
         self._router_timer -= 1
         if self._router_timer <= 0:
             self._router_presence = not self._router_presence
@@ -160,6 +188,15 @@ class MockDataSource(DataSource):
             self._router_timer = int(duration_sec / self.sampling_interval)
 
     def _update_dedicated_state(self):
+        if self._forced_scenario:
+            if self._forced_scenario in ("human_active", "human_static", "object_fan"):
+                self._dedicated_presence = True
+            elif self._forced_scenario == "object_moved":
+                self._dedicated_presence = True
+            else:
+                self._dedicated_presence = False
+            return
+
         self._dedicated_timer -= 1
         if self._dedicated_timer <= 0:
             self._dedicated_presence = not self._dedicated_presence
@@ -170,15 +207,42 @@ class MockDataSource(DataSource):
         self, base_amplitude: float, noise_std: float, is_presence: bool, movement_gain: float
     ) -> float:
         """
-        Modela la perturbación multicamino inducida por el cuerpo humano:
-        Amplitud = Base + Ruido Térmico + [Componente Doppler/Micro-movimiento si hay presencia]
+        Modela la perturbación multicamino según la física del escenario:
+        - Objeto Ventilador: Armónico único puro a 4.0 Hz (alta periodicidad).
+        - Objeto Mueble: Escalón estático permanente de continua (+4.5) con mínima varianza.
+        - Persona Estática: Micro-Doppler respiratorio a 0.25 Hz.
+        - Persona Activa: Modulaciones Doppler caóticas multicamino y absorción.
+        - Vacío: Ruido gaussiano blanco puro.
         """
-        # Ruido de fondo gaussiano
+        if self._forced_scenario == "object_fan":
+            # Firma espectral de ventilador: oscilación armónica periódica pura
+            periodic_osc = np.sin(2.0 * np.pi * 4.0 * self._time_step) * (movement_gain * 0.95)
+            val = base_amplitude + periodic_osc + np.random.normal(0, 0.15)
+            return round(float(val), 3)
+
+        if self._forced_scenario == "object_moved":
+            # Firma de mueble desplazado: desplazamiento estático permanente (escalón)
+            step_offset = 4.8 if self._time_step % 20 > 5 else 0.0
+            val = base_amplitude + step_offset + np.random.normal(0, 0.2)
+            return round(float(val), 3)
+
+        if self._forced_scenario == "human_static":
+            # Micro-movimiento torácico respiratorio (0.25 Hz)
+            breathing = np.sin(2.0 * np.pi * 0.25 * self._time_step) * 1.5
+            val = base_amplitude + breathing + np.random.normal(0, 0.3)
+            return round(float(val), 3)
+
+        if self._forced_scenario == "empty_room":
+            # Ambiente sin presencia: únicamente ruido térmico gaussiano
+            val = base_amplitude + np.random.normal(0, noise_std * 0.6)
+            return round(float(val), 3)
+
+        # Ruido de fondo gaussiano normal
         noise = float(np.random.normal(0, noise_std))
         val = base_amplitude + noise
 
         if is_presence:
-            # Ondulación respiratoria/movimiento superpuesta
+            # Persona activa caminando: dispersión multicamino aperiódica
             doppler = (
                 np.sin(2.0 * np.pi * 0.3 * self._time_step) * 0.6
                 + np.sin(2.0 * np.pi * 0.8 * self._time_step) * 0.4

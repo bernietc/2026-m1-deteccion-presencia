@@ -108,10 +108,60 @@ Heartbeat de estado del nodo físico.
 
 ---
 
+## 6. Tópicos de Configuración y Control de Nodos ESP32
+
+Emitidos por el backend hacia los nodos para ajustar parámetros de radiofrecuencia y muestreo en tiempo real.
+
+### `presence/nodes/pir/config`
+```json
+{
+  "node_id": "esp32_pir_node_01",
+  "gpio_pin": 13,
+  "trigger_mode": "RISING",
+  "debounce_ms": 3000,
+  "sample_interval_ms": 200,
+  "mqtt_topic": "presence/pir/telemetry"
+}
+```
+
+### `presence/nodes/csi_router/config`
+```json
+{
+  "node_id": "esp32_csi_sta_node",
+  "wifi_channel": 6,
+  "target_ssid": "Laboratorio-WiFi",
+  "sampling_rate_hz": 20,
+  "subcarriers_mode": "PRIMARY",
+  "mqtt_topic": "presence/csi/router/raw"
+}
+```
+
+### `presence/nodes/csi_dedicated/config`
+```json
+{
+  "node_id": "esp32_dedicated_pair",
+  "wifi_channel": 1,
+  "tx_power_dbm": 16,
+  "packet_rate_hz": 40,
+  "custom_bssid": "02:00:00:00:00:01",
+  "mqtt_topic": "presence/csi/dedicated/raw"
+}
+```
+
+---
+
 ## Simulación de Hardware
 
 Para simular publicaciones de hardware sin encender microcontroladores físicos:
 
 ```bash
+# Simulación general
 python scripts/mqtt_test_publisher.py --host localhost --port 1883 --case all
+
+# Simulación de objeto periódico (ventilador en marcha)
+python scripts/mqtt_test_publisher.py --host localhost --port 1883 --case all --scenario object_fan
+
+# Simulación de persona en reposo (respiración micro-Doppler)
+python scripts/mqtt_test_publisher.py --host localhost --port 1883 --case all --scenario human_static
 ```
+

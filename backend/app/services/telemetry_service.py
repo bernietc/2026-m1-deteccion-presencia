@@ -41,6 +41,7 @@ class TelemetryService:
         )
         self._broadcast_task: Optional[asyncio.Task] = None
         self._running = False
+        self._forced_scenario: Optional[str] = None
 
     async def initialize(self):
         """Inicializa la fuente de datos (Mock o MQTT) y el bucle de difusión WebSocket."""
@@ -50,6 +51,9 @@ class TelemetryService:
         else:
             logger.info("Inicializando DataSource en modo MOCK (simulación interna)...")
             self.data_source = MockDataSource(sampling_rate_hz=10.0)
+
+        if self._forced_scenario and isinstance(self.data_source, MockDataSource):
+            self.data_source.set_scenario(self._forced_scenario)
 
         self.data_source.set_sample_handler(self.handle_incoming_sample)
         await self.data_source.start()
@@ -84,6 +88,16 @@ class TelemetryService:
         if isinstance(self.data_source, MockDataSource):
             return self.data_source.is_paused
         return False
+
+    def set_simulation_scenario(self, scenario: Optional[str]):
+        """Establece el escenario activo de experimentación (Objetos vs Personas)."""
+        self._forced_scenario = scenario
+        if isinstance(self.data_source, MockDataSource):
+            self.data_source.set_scenario(scenario)
+
+    def get_simulation_scenario(self) -> Optional[str]:
+        """Retorna el escenario activo si está forzado."""
+        return self._forced_scenario
 
     async def handle_incoming_sample(self, case_id: str, sample: Any):
         """

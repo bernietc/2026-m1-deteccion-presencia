@@ -70,6 +70,20 @@ async def init_db():
             ON telemetry(case_id, id DESC)
         """)
 
+        # Prueba USB real: no comparte datos ni métricas con mock/MQTT.
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS pir_usb_readings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                received_at TEXT NOT NULL,
+                motion INTEGER NOT NULL CHECK (motion IN (0, 1)),
+                UNIQUE (received_at, motion)
+            )
+        """)
+        await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_pir_usb_received_at
+            ON pir_usb_readings (received_at DESC, id DESC)
+        """)
+
         await db.commit()
 
         # Verificar si hay ensayos precargados

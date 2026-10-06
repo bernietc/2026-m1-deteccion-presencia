@@ -137,7 +137,112 @@ export const ComparisonPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. CONCLUSIONES TÉCNICAS */}
+      {/* 4. DISCRIMINACIÓN: OBJETOS INANIMADOS VS. PERSONAS */}
+      <div>
+        <SectionHeader
+          title="Discriminación Física: Objetos Inanimados vs. Cuerpos Humanos"
+          subtitle="Fundamentos físicos y respuesta diferencial entre radiación térmica infrarroja y multitrayecto RF"
+          icon={<Scale size={18} />}
+        />
+
+        <div className="glass-table-container">
+          <table className="glass-table">
+            <thead>
+              <tr>
+                <th style={{ width: '22%' }}>Escenario Físico</th>
+                <th style={{ width: '24%', color: '#059669' }}>Respuesta Sensor PIR (9.4 µm)</th>
+                <th style={{ width: '28%', color: '#0284c7' }}>Respuesta CSI Wi-Fi (2.4 GHz)</th>
+                <th style={{ width: '26%', color: '#6366f1' }}>Decisión / Clasificación del Sistema</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong>Persona en Movimiento</strong>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Caminando / desplazándose</div>
+                </td>
+                <td style={{ color: '#059669', fontWeight: 600 }}>
+                  DETECTA (1) — Gradiente térmico dinámico en piroelementos
+                </td>
+                <td style={{ color: '#0284c7', fontWeight: 600 }}>
+                  DETECTA — Dispersión multicamino aperiódica y absorción de agua (cuerpo ~70%)
+                </td>
+                <td>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(5, 150, 105, 0.15)', color: '#059669', fontWeight: 700, fontSize: '0.75rem' }}>
+                    HUMANO ACTIVO
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Persona en Reposo / Sentada</strong>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Inmóvil / respirando</div>
+                </td>
+                <td style={{ color: '#dc2626', fontWeight: 600 }}>
+                  NO DETECTA (0) — Sin flujo térmico diferencial entre lentes
+                </td>
+                <td style={{ color: '#0284c7', fontWeight: 600 }}>
+                  DETECTA — Micro-Doppler de caja torácica (0.2 a 0.35 Hz) en análisis espectral
+                </td>
+                <td>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', fontWeight: 700, fontSize: '0.75rem' }}>
+                    HUMANO ESTÁTICO (RESPIRACIÓN)
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Ventilador en Marcha</strong>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Aspas plásticas/metálicas girando</div>
+                </td>
+                <td style={{ color: '#64748b' }}>
+                  REPOSO (0) — Temperatura ambiente; sin emisión infrarroja diferencial
+                </td>
+                <td style={{ color: '#f59e0b', fontWeight: 600 }}>
+                  PERTURBACIÓN PERIÓDICA — Picos armónicos nítidos en FFT con periodicidad &gt; 0.40
+                </td>
+                <td>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', fontWeight: 700, fontSize: '0.75rem' }}>
+                    OBJETO PERIÓDICO (DESCARTADO)
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Objeto / Mueble Desplazado</strong>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Mueble o puerta desplazada</div>
+                </td>
+                <td style={{ color: '#64748b' }}>
+                  REPOSO (0) — Sin radiación térmica corporal
+                </td>
+                <td style={{ color: '#8b5cf6', fontWeight: 600 }}>
+                  ESCALÓN DC — Salto estático permanente que se estabiliza con varianza nula
+                </td>
+                <td>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(139, 92, 246, 0.15)', color: '#7c3aed', fontWeight: 700, fontSize: '0.75rem' }}>
+                    CAMBIO ESTÁTICO (NO HUMANO)
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Ambiente Vacío</strong>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Recinto sin presencia</div>
+                </td>
+                <td style={{ color: '#64748b' }}>REPOSO (0) — Nivel constante</td>
+                <td style={{ color: '#64748b' }}>LÍNEA BASE PLANA — Ruido térmico gaussiano estándar</td>
+                <td>
+                  <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', background: 'rgba(100, 116, 139, 0.15)', color: '#64748b', fontWeight: 700, fontSize: '0.75rem' }}>
+                    SIN PRESENCIA
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 5. CONCLUSIONES TÉCNICAS */}
       <GlassPanel>
         <div style={{ display: 'flex', gap: '0.85rem' }}>
           <div style={{ color: 'var(--accent-blue)', marginTop: '0.1rem' }}>
@@ -149,13 +254,13 @@ export const ComparisonPage: React.FC = () => {
             </strong>
             <ul style={{ paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               <li>
-                <strong>PIR:</strong> Máxima reactividad y latencia inferior a 160 ms, pero nula sensibilidad a presencia estática (personas inmóviles o dormidas) y dependencia estricta de línea de visión.
+                <strong>PIR:</strong> Máxima reactividad y latencia inferior a 160 ms, pero nula sensibilidad a presencia estática (personas inmóviles o dormidas) y dependencia estricta de línea de visión. Es inmune a perturbaciones mecánicas frías como ventiladores.
               </li>
               <li>
-                <strong>CSI Router:</strong> No requiere despliegue de nuevos emisores de radiofrecuencia, detecta a través de obstáculos ligeros, pero sufre varianza de canal inducida por tráfico externo.
+                <strong>CSI Router:</strong> No requiere desplegar nuevos emisores de radiofrecuencia, detecta a través de obstáculos ligeros y capta micro-Doppler respiratorio, pero requiere filtrado de periodicidad para no confundir ventiladores con humanos.
               </li>
               <li>
-                <strong>CSI Dedicado:</strong> Control total del canal RF con piso de ruido reducido y alta reproducibilidad en pruebas experimentales de laboratorio.
+                <strong>CSI Dedicado:</strong> Control total del canal RF con piso de ruido reducido, calibración fina de potencia de transmisión (dBm) y máxima reproducibilidad experimental.
               </li>
             </ul>
           </div>

@@ -74,12 +74,14 @@ class CsiSignalPipeline:
         energy = self.energy_extractor.extract(window_for_features)
 
         # Etapa 4: Función de Score de Detección (Sigmoide normalizada en torno al umbral)
-        # Score = 1 / (1 + exp(-k * (var - threshold)))
         k = 1.2
         diff = variance - self.variance_threshold
         detection_score = float(1.0 / (1.0 + np.exp(-k * np.clip(diff, -10.0, 10.0))))
 
-        # Decisión binaria de presencia
+        # Etapa 5: Discriminación de Objetos vs. Personas (Firma frecuencial y temporal)
+        periodicity_ratio, target_type = self._classify_target(window_for_features, variance)
+
+        # Decisión binaria de presencia (se activa tanto por persona como por perturbación significativa)
         presence_detected = bool(variance >= self.variance_threshold or detection_score >= 0.5)
 
         features = FeatureMetrics(
@@ -87,6 +89,51 @@ class CsiSignalPipeline:
             energy=round(energy, 4),
             detection_score=round(detection_score, 4),
             threshold_applied=self.variance_threshold,
+            periodicity_ratio=round(periodicity_ratio, 4),
+            target_type=target_type,
         )
 
         return filtered_signal, features, presence_detected
+
+    def _classify_target(self, signal_window: List[float], variance: float) -> Tuple[float, str]:
+        """
+        Distingue objetos inanimados de personas según la física de la perturbación:
+        - 'empty': Ruido base de canal sin perturbaciones.
+        - 'object_fan': Perturbación armónica estricta con pico espectral dominante (ventilador).
+        - 'object_moved': Desplazamiento brusco estático de un objeto/mueble (escalón DC).
+        - 'person_active': Persona caminando con dispersión multicamino aperiódica.
+        - 'person_static': Persona en reposo/sentada con micro-movimiento respiratorio.
+        """
+        if len(signal_window) < 8 or variance < 0.25:
+            return 0.0, "empty"
+
+        arr = np.array(signal_window, dtype=float)
+        detrended = arr - np.mean(arr)
+
+        # Análisis espectral de la componente AC
+        fft_vals = np.abs(np.fft.rfft(detrended))
+        ac_fft = fft_vals[1:] if len(fft_vals) > 1 else np.array([0.0])
+        total_power = float(np.sum(ac_fft**2))
+
+        if total_power > 1e-6:
+            max_power = float(np.max(ac_fft**2))
+            periodicity_ratio = float(max_power / total_power)
+        else:
+            periodicity_ratio = 0.0
+
+        # Regla 1: Objeto periódico (Ventilador) -> pico armónico único dominante
+        if periodicity_ratio >= 0.40 and variance >= self.variance_threshold * 0.5:
+            target_type = "object_fan"
+        # Regla 2: Objeto desplazado (Mueble movido) -> salto escalón de continua
+        elif len(signal_window) >= 14 and abs(float(np.mean(arr[len(arr)//2:])) - float(np.mean(arr[:len(arr)//2]))) > 2.5 and float(np.var(arr[len(arr)//2:])) < 0.9:
+            target_type = "object_moved"
+        # Regla 3: Persona activa -> alta varianza aperiódica
+        elif variance >= self.variance_threshold:
+            target_type = "person_active"
+        # Regla 4: Persona quieta / reposo -> varianza moderada con componente respiratoria
+        elif variance >= 0.35:
+            target_type = "person_static"
+        else:
+            target_type = "empty"
+
+        return periodicity_ratio, target_type

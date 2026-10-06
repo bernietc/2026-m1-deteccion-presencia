@@ -89,6 +89,10 @@ class InMemoryTelemetryRepository:
             status.current_latency_ms = round(latency_ms, 1)
             status.last_updated = datetime.now(timezone.utc).isoformat()
             status.total_samples += 1
+            if features and hasattr(features, "target_type"):
+                status.target_type = features.target_type
+            elif case_id == CaseId.PIR.value:
+                status.target_type = "person_active" if presence else "empty"
 
         if filter_meta:
             self._latest_filter_meta[case_id] = filter_meta
@@ -188,6 +192,7 @@ class InMemoryTelemetryRepository:
 
         features = self._latest_features.get(case_id)
         current_score = features.detection_score if features else (1.0 if presence else 0.0)
+        target_type = features.target_type if features else ("person_active" if presence else "empty")
 
         return CaseTelemetryPayload(
             case_id=case_id,
@@ -198,6 +203,7 @@ class InMemoryTelemetryRepository:
             filter_metadata=self._latest_filter_meta.get(case_id),
             features=features,
             current_score=current_score,
+            target_type=target_type,
         )
 
 

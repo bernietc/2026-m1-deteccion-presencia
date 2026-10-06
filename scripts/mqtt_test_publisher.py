@@ -31,6 +31,12 @@ def parse_args():
         default="all",
         help="Caso a publicar (default: all)",
     )
+    parser.add_argument(
+        "--scenario",
+        choices=["auto", "human_active", "human_static", "object_fan", "object_moved", "empty"],
+        default="auto",
+        help="Escenario físico de prueba (default: auto)",
+    )
     parser.add_argument("--interval", type=float, default=0.2, help="Intervalo de publicación en seg (default: 0.2s)")
     return parser.parse_args()
 
@@ -69,10 +75,15 @@ def main():
 
             # 1. PIR Simulator
             if args.case in ("pir", "all"):
-                pir_timer -= 1
-                if pir_timer <= 0:
-                    pir_state = not pir_state
-                    pir_timer = int(random.uniform(3.0, 7.0) / args.interval)
+                if args.scenario == "human_active":
+                    pir_state = True
+                elif args.scenario in ("human_static", "object_fan", "object_moved", "empty"):
+                    pir_state = False
+                else:
+                    pir_timer -= 1
+                    if pir_timer <= 0:
+                        pir_state = not pir_state
+                        pir_timer = int(random.uniform(3.0, 7.0) / args.interval)
 
                 pir_payload = {
                     "timestamp": now_iso,
@@ -87,11 +98,27 @@ def main():
 
             # 2. CSI Router Simulator
             if args.case in ("csi_router", "all"):
-                # Perturbación sinusoidal periódica simulando persona caminando
-                presence_active = (int(t / 8.0) % 2) == 1
-                base = 22.0 + np.random.normal(0, 0.6)
-                if presence_active:
-                    base += np.sin(2.0 * np.pi * 0.4 * t) * 3.5 + np.random.normal(0, 1.2)
+                if args.scenario == "object_fan":
+                    base = 22.0 + np.sin(2.0 * np.pi * 4.0 * t) * 3.5 + np.random.normal(0, 0.2)
+                    presence_active = True
+                elif args.scenario == "object_moved":
+                    base = 22.0 + 4.5 + np.random.normal(0, 0.2)
+                    presence_active = True
+                elif args.scenario == "human_static":
+                    base = 22.0 + np.sin(2.0 * np.pi * 0.25 * t) * 1.5 + np.random.normal(0, 0.3)
+                    presence_active = True
+                elif args.scenario == "empty":
+                    base = 22.0 + np.random.normal(0, 0.3)
+                    presence_active = False
+                elif args.scenario == "human_active":
+                    base = 22.0 + np.sin(2.0 * np.pi * 0.4 * t) * 3.5 + np.random.normal(0, 1.2)
+                    presence_active = True
+                else:
+                    # Alternancia automática
+                    presence_active = (int(t / 8.0) % 2) == 1
+                    base = 22.0 + np.random.normal(0, 0.6)
+                    if presence_active:
+                        base += np.sin(2.0 * np.pi * 0.4 * t) * 3.5 + np.random.normal(0, 1.2)
 
                 router_payload = {
                     "timestamp": now_iso,
@@ -105,10 +132,26 @@ def main():
 
             # 3. CSI Dedicated Simulator
             if args.case in ("csi_dedicated", "all"):
-                presence_active = (int((t + 3.0) / 9.0) % 2) == 1
-                base = 35.0 + np.random.normal(0, 0.4)
-                if presence_active:
-                    base += np.sin(2.0 * np.pi * 0.5 * t) * 4.2 + np.random.normal(0, 1.5)
+                if args.scenario == "object_fan":
+                    base = 35.0 + np.sin(2.0 * np.pi * 4.0 * t) * 4.0 + np.random.normal(0, 0.15)
+                    presence_active = True
+                elif args.scenario == "object_moved":
+                    base = 35.0 + 5.0 + np.random.normal(0, 0.2)
+                    presence_active = True
+                elif args.scenario == "human_static":
+                    base = 35.0 + np.sin(2.0 * np.pi * 0.25 * t) * 1.8 + np.random.normal(0, 0.25)
+                    presence_active = True
+                elif args.scenario == "empty":
+                    base = 35.0 + np.random.normal(0, 0.2)
+                    presence_active = False
+                elif args.scenario == "human_active":
+                    base = 35.0 + np.sin(2.0 * np.pi * 0.5 * t) * 4.2 + np.random.normal(0, 1.5)
+                    presence_active = True
+                else:
+                    presence_active = (int((t + 3.0) / 9.0) % 2) == 1
+                    base = 35.0 + np.random.normal(0, 0.4)
+                    if presence_active:
+                        base += np.sin(2.0 * np.pi * 0.5 * t) * 4.2 + np.random.normal(0, 1.5)
 
                 dedicated_payload = {
                     "timestamp": now_iso,
